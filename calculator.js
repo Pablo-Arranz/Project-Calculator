@@ -14,7 +14,7 @@ function div(a, b) {
     return a / b;
 }
 
-function operate(operator, a, b) {
+function compute(operator, a, b) {
     if (operator === '+') {
         return add(a,b);
     } else if (operator === '-') {
@@ -27,51 +27,163 @@ function operate(operator, a, b) {
 }
 
 const display = document.getElementById('display');
-const numDisplay = document.getElementById('numDisplay');
-const opDisplay = document.getElementById('opDisplay');
-const btn0 = document.getElementById('0');
-const btn1 = document.getElementById('1');
-const btn2 = document.getElementById('2');
-const btn3 = document.getElementById('3');
-const btn4 = document.getElementById('4');
-const btn5 = document.getElementById('5');
-const btn6 = document.getElementById('6');
-const btn7 = document.getElementById('7');
-const btn8 = document.getElementById('8');
-const btn9 = document.getElementById('9');
-const btnAdd = document.getElementById('+');
-const btnSub = document.getElementById('-');
-const btnMult = document.getElementById('*');
-const btnDiv = document.getElementById('/');
+const current = document.getElementById('current');
+const previous = document.getElementById('previous');
+const numbers = document.querySelectorAll('.number');
+const operators = document.querySelectorAll('.operator');
+const clearButton = document.getElementById('clear');
+const equalButton = document.getElementById('equal');
+const signButton = document.getElementById('sign');
+const percentButton = document.getElementById('percent');
+const backspaceButton = document.getElementById('backspace');
+const body = document.querySelector('body');
 
-let displayValue = 0;
-
-function showDisplay() {
-    const numbers = document.querySelectorAll('.number');
-    numbers.forEach(e => {
-        e.addEventListener('click', function(){
-            numDisplay.textContent += e.textContent;
-            displayValue = display.textContent;   
-            createOp();
-        })        
-    }) 
-}
-showDisplay();
-
+let currentValue = 0;
+let previousValue = 0;
+let a = 0;
+let b = 0;
 let operator;
+let result;
 
-function createOp() {
-    const operators = document.querySelectorAll('.operator');
-    operators.forEach(e => {
-        e.addEventListener('click', function(){
-            operator = e.textContent;
-            opDisplay.textContent = operator;
+
+function updateDisplay() {
+    numbers.forEach(number => {
+        number.addEventListener('click', () => {
+            if ((number.textContent === '.') && (current.textContent.includes('.'))) return
+            current.textContent += number.textContent;
+            currentValue += number.textContent;
+            number.blur();
         })
     })
 }
+updateDisplay()
 
-function calculate() {
-    let a = displayValue;
-    numDisplay.textContent = '';
-    opDisplay.textContent = '';
+function chooseOperator() {
+    operators.forEach(e => {
+        e.addEventListener('click', () => {
+            if (current.textContent === '') return
+            if (previous.textContent !== '') {
+                a = parseFloat(previousValue);
+                b = parseFloat(currentValue);
+                result = compute(operator, a, b)
+                operator = e.textContent;
+                currentValue = 0;
+                previousValue = result;
+                previous.textContent = result + ' ' + e.textContent;
+                current.textContent = '';
+            } else {
+                previous.textContent = current.textContent + ' ' + e.textContent;
+                current.textContent = '';
+                operator = e.textContent;
+                previousValue = currentValue;
+                currentValue = 0;                
+            }
+        })
+    })
 }
+chooseOperator()
+
+equalButton.addEventListener('click', () => {
+    if (current.textContent === '') return
+    if (previous.textContent === '') return
+    a = parseFloat(previousValue);
+    b = parseFloat(currentValue);
+    result = compute(operator, a, b);
+    currentValue = result;
+    previousValue = 0;
+    previous.textContent = '';
+    current.textContent = currentValue;
+    equalButton.blur();
+})
+
+clearButton.addEventListener('click', () => {
+    current.textContent = '';
+    previous.textContent = '';
+    previousValue = 0;
+    currentValue = 0;
+    clearButton.blur();
+})
+
+backspaceButton.addEventListener('click', () => {
+    current.textContent = current.textContent.slice(0, -1);
+    currentValue = currentValue.toString().slice(0, -1);
+    backspaceButton.blur();
+})
+
+signButton.addEventListener('click', () => {
+    currentValue = currentValue * -1;
+    current.textContent = currentValue;
+    signButton.blur();
+})
+
+percentButton.addEventListener('click', () => {
+    currentValue = currentValue / 100;
+    current.textContent = currentValue;
+    percentButton.blur();
+})
+
+document.addEventListener('keydown', (e) => {
+    for (let i = 0; i < numbers.length; i++) {
+        if (e.key === numbers[i].textContent) {
+            if ((numbers[i].textContent === '.') && (current.textContent.includes('.'))) return
+            current.textContent += numbers[i].textContent;
+            currentValue += numbers[i].textContent;
+        }
+    }
+    for (let i = 0; i < operators.length; i++) {
+        if (e.key === operators[i].textContent) {
+            if (current.textContent === '') return
+            if (previous.textContent !== '') {
+                a = parseFloat(previousValue);
+                b = parseFloat(currentValue);
+                result = compute(operator, a, b)
+                operator = operators[i].textContent;
+                currentValue = 0;
+                previousValue = result;
+                previous.textContent = result + ' ' + operators[i].textContent;
+                current.textContent = '';
+            } else {
+                previous.textContent = current.textContent + ' ' + operators[i].textContent;
+                current.textContent = '';
+                operator = operators[i].textContent;
+                previousValue = currentValue;
+                currentValue = 0;                
+            }
+        }
+    }
+    switch (e.key) {
+        case 'Enter':
+            equalButton.classList.toggle('clicked');
+            setTimeout(function() {equalButton.classList.remove('clicked')}, 100);
+            if (current.textContent === '') return
+            if (previous.textContent === '') return
+            a = parseFloat(previousValue);
+            b = parseFloat(currentValue);
+            result = compute(operator, a, b);
+            currentValue = result;
+            previousValue = 0;
+            previous.textContent = '';
+            current.textContent = currentValue;             
+            break;
+        case '%':
+            percentButton.classList.toggle('clicked');
+            setTimeout(function() {percentButton.classList.remove('clicked')}, 100);
+            currentValue = currentValue / 100;
+            current.textContent = currentValue;
+            break;
+        case 'Backspace':
+            backspaceButton.classList.toggle('clicked');
+            setTimeout(function() {backspaceButton.classList.remove('clicked')}, 100);
+            current.textContent = current.textContent.slice(0, -1);
+            currentValue = currentValue.toString().slice(0, -1);
+            break;
+        case 'Delete':
+            clearButton.classList.toggle('clicked');
+            setTimeout(function() {clearButton.classList.remove('clicked')}, 100);            
+            current.textContent = '';
+            previous.textContent = '';
+            previousValue = 0;
+            currentValue = 0;
+            break;
+    }
+})
