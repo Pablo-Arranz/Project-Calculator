@@ -15,6 +15,8 @@ function div(a, b) {
 }
 
 function compute(operator, a, b) {
+    a = Number(a);
+    b = Number(b);
     if (operator === '+') {
         return add(a,b);
     } else if (operator === '-') {
@@ -24,6 +26,10 @@ function compute(operator, a, b) {
     } if (operator === '/') {
         return div(a,b);
     }
+}
+
+function round(result) {
+    return Math.round(result * 1000)/1000;
 }
 
 const display = document.getElementById('display');
@@ -63,9 +69,9 @@ function chooseOperator() {
         e.addEventListener('click', () => {
             if (current.textContent === '') return
             if (previous.textContent !== '') {
-                a = parseFloat(previousValue);
-                b = parseFloat(currentValue);
-                result = compute(operator, a, b)
+                a = previousValue;
+                b = currentValue;
+                result = round(compute(operator, a, b))
                 operator = e.textContent;
                 currentValue = 0;
                 previousValue = result;
@@ -86,9 +92,9 @@ chooseOperator()
 equalButton.addEventListener('click', () => {
     if (current.textContent === '') return
     if (previous.textContent === '') return
-    a = parseFloat(previousValue);
-    b = parseFloat(currentValue);
-    result = compute(operator, a, b);
+    a = previousValue;
+    b = currentValue;
+    result = round(compute(operator, a, b));
     currentValue = result;
     previousValue = 0;
     previous.textContent = '';
@@ -125,6 +131,10 @@ percentButton.addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
     for (let i = 0; i < numbers.length; i++) {
         if (e.key === numbers[i].textContent) {
+            numbers[i].classList.toggle('clicked');
+            setTimeout(function() {numbers[i].classList.remove('clicked')}, 100);
+            numbers[i].classList.toggle('number');
+            setTimeout(function() {numbers[i].classList.toggle('number')}, 100);
             if ((numbers[i].textContent === '.') && (current.textContent.includes('.'))) return
             current.textContent += numbers[i].textContent;
             currentValue += numbers[i].textContent;
@@ -132,11 +142,15 @@ document.addEventListener('keydown', (e) => {
     }
     for (let i = 0; i < operators.length; i++) {
         if (e.key === operators[i].textContent) {
+            operators[i].classList.toggle('clicked');
+            setTimeout(function() {operators[i].classList.remove('clicked')}, 100);
+            operators[i].classList.toggle('operator');
+            setTimeout(function() {operators[i].classList.toggle('operator')}, 100);
             if (current.textContent === '') return
             if (previous.textContent !== '') {
-                a = parseFloat(previousValue);
-                b = parseFloat(currentValue);
-                result = compute(operator, a, b)
+                a = previousValue;
+                b = currentValue;
+                result = round(compute(operator, a, b))
                 operator = operators[i].textContent;
                 currentValue = 0;
                 previousValue = result;
@@ -157,9 +171,9 @@ document.addEventListener('keydown', (e) => {
             setTimeout(function() {equalButton.classList.remove('clicked')}, 100);
             if (current.textContent === '') return
             if (previous.textContent === '') return
-            a = parseFloat(previousValue);
-            b = parseFloat(currentValue);
-            result = compute(operator, a, b);
+            a = previousValue;
+            b = currentValue;
+            result = round(compute(operator, a, b));
             currentValue = result;
             previousValue = 0;
             previous.textContent = '';
